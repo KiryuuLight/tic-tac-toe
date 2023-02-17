@@ -89,24 +89,55 @@ function GameController(playerOne = 'Mario', playerTwo = 'Luigi') {
         );
         board.putPiece(row, column, getActivePlayer().token);
 
+        const player = getActivePlayer().token;
+
+        const isWinner = handleWin(player);
+
+        if (isWinner) return `Player : ${getActivePlayer().name} wins the game`;
+
         switchPlayerTurn();
         printNewRound();
     };
 
     // GAME LOGIC
 
-    // In our array we have elements positioned by [x][y] dimensions
-    // So we are looking for these specific patterns
-    // For row : All [x] values have to be the same , [y] values doesn't matter
-    // Example : [0][_] [0][_] [0][_]
+    const handleWin = (token) => {
+        // In our array we have elements positioned by [x][y] dimensions
+        // So we are looking for these specific patterns
+        // For row : All [x] values have to be the same , [y] values doesn't matter
+        // Example : [0][_] [0][_] [0][_]
 
-    // For column : All [y] values have to be the same , [x] values doesn't matter
-    // Example : [_][2] [_][2] [_][2]
+        const axisX = board
+            .getBoard()
+            .map((row) => row.every((value) => value.getValue() === token))
+            .some((value) => value === true);
 
-    // Three in a row pattern ! [Left]
-    // [0][2] [1][1] [2][0]
-    // Three in a row pattern ! [Right]
-    // [0][0] [1][1] [2][2]
+        // For column : All [y] values have to be the same , [x] values doesn't matter
+        // Example : [_][2] [_][2] [_][2]
+
+        const axisY = board.getBoard().every((row) => {
+            const column = [0, 1, 2];
+            return (
+                row[column[0]].getValue() === token ||
+                row[column[1]].getValue() === token ||
+                row[column[2]].getValue() === token
+            );
+        });
+
+        // Three in a row pattern ! [Left]
+        // [0][2] [1][1] [2][0]
+        // Three in a row pattern ! [Right]
+        // [0][0] [1][1] [2][2]
+
+        const cross = board.getBoard().every((row, index) => {
+            const decrease = [2, 1, 0];
+            return (
+                row[index].getValue() === token ||
+                row[decrease[index]].getValue() === token
+            );
+        });
+        return [axisX, axisY, cross].some((value) => value === true);
+    };
 
     printNewRound();
 
