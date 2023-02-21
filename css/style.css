@@ -1,0 +1,114 @@
+:root {
+    font-size: 62.5%;
+    --text: #FF69B4;
+    --bg: #34165D;
+    --mark: #ff7897;
+}
+
+body {
+    display: flex;
+    background-color: var(--bg);
+    font-family: 'PT Sans', sans-serif;
+    justify-content: center;
+}
+
+img {
+    width: 100%;
+}
+
+.main {
+    max-width: 1200px;
+}
+
+.text {
+    color: var(--text);
+    text-align: center;
+    font-size: 3rem;
+    margin: 0;
+    padding: 16px 0px;
+}
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+}
+
+.player {
+    justify-content: start;
+    flex-direction: column;
+
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px
+}
+
+.btnPick {
+    all: unset;
+    width: 90px;
+    height: 90px;
+    background-color: var(--text);
+    position: relative;
+
+}
+
+@media (min-width : 576px) {
+    .btnPick {
+        width: 120px;
+        height: 120px;
+    }
+}
+
+@media (min-width : 768px) {
+    .btnPick {
+        width: 160px;
+        height: 160px;
+    }
+}
+
+@media (min-width : 1400px) {
+    .btnPick {
+        width: 200px;
+        height: 200px;
+    }
+}
+
+.btnOption {
+    all: unset;
+    width: auto;
+    height: auto;
+    cursor: pointer;
+    padding: 20px;
+    font-size: 2.4rem;
+    color: var(--text);
+}
+
+.btnOption:hover {
+    color: #000000 !important;
+    transition: all .5s;
+}
+
+.mb-y {
+    margin-top: 20px;
+}
+
+.option-section {
+    gap: 10px;
+}
+
+.direction-column {
+    flex-direction: column;
+    text-align: center;
+    gap: 10px;
+    font-size: 1.6rem;
+}
+
+
+
+.child {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
