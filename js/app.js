@@ -1,5 +1,3 @@
-/* Console version */
-
 function GameBoard() {
     const rows = 3;
     const columns = 3;
@@ -62,11 +60,11 @@ function GameController(playerOne = 'Mario', playerTwo = 'Luigi') {
     const players = [
         {
             name: playerOne,
-            token: '❌',
+            token: 'close',
         },
         {
             name: playerTwo,
-            token: '⭕',
+            token: 'circle',
         },
     ];
 
@@ -93,10 +91,25 @@ function GameController(playerOne = 'Mario', playerTwo = 'Luigi') {
 
         const isWinner = handleWin(player);
 
-        if (isWinner) return `Player : ${getActivePlayer().name} wins the game`;
+        console.log(isWinner);
+
+        if (
+            isWinner.calcX.winner ||
+            isWinner.calcY.winner ||
+            isWinner.calcCL.winner ||
+            isWinner.calcCR.winner
+        ) {
+            const objValue = Object.values(isWinner).find(
+                (obj) => obj.winner === true
+            );
+            console.log(objValue);
+            return objValue;
+        }
 
         switchPlayerTurn();
         printNewRound();
+
+        return [];
     };
 
     // GAME LOGIC
@@ -107,21 +120,38 @@ function GameController(playerOne = 'Mario', playerTwo = 'Luigi') {
         // For row : All [x] values have to be the same , [y] values doesn't matter
         // Example : [0][_] [0][_] [0][_]
 
-        const axisX = board
-            .getBoard()
-            .map((row) => row.every((value) => value.getValue() === token))
-            .some((value) => value === true);
+        const axisX = board.getBoard().map((row, index) => {
+            let result = '';
+            const value = [0, 1, 2];
+            if (
+                row[value[0]].getValue() === token &&
+                row[value[1]].getValue() === token &&
+                row[value[2]].getValue() === token
+            ) {
+                result = [
+                    [index, 0],
+                    [index, 1],
+                    [index, 2],
+                ];
+            }
+
+            return result;
+        });
 
         // For column : All [y] values have to be the same , [x] values doesn't matter
         // Example : [_][2] [_][2] [_][2]
 
-        const axisY = board.getBoard().every((row) => {
-            const column = [0, 1, 2];
-            return (
-                row[column[0]].getValue() === token ||
-                row[column[1]].getValue() === token ||
-                row[column[2]].getValue() === token
-            );
+        const axisY = board.getBoard().map((el, index) => {
+            let result = '';
+            const column = board.getBoard().map((row) => row[index].getValue());
+            if (column.every((value) => value === token)) {
+                result = [
+                    [0, index],
+                    [1, index],
+                    [2, index],
+                ];
+            }
+            return result;
         });
 
         // Three in a row pattern ! [Left]
@@ -129,22 +159,171 @@ function GameController(playerOne = 'Mario', playerTwo = 'Luigi') {
         // Three in a row pattern ! [Right]
         // [0][0] [1][1] [2][2]
 
-        const cross = board.getBoard().every((row, index) => {
-            const decrease = [2, 1, 0];
-            return (
-                row[index].getValue() === token ||
-                row[decrease[index]].getValue() === token
-            );
-        });
-        return [axisX, axisY, cross].some((value) => value === true);
-    };
+        const condition = [0, 1, 2];
+        const conditionReverse = [2, 1, 0];
 
-    printNewRound();
+        const cross = (value) => {
+            const mapValue = board.getBoard().map((row, index) => {
+                let result = '';
+                if (row[value[index]].getValue() === token) {
+                    result = [index, value[index]];
+                }
+
+                return result;
+            });
+            return mapValue;
+        };
+
+        // In this function we flat the array to one level --> [[[]]] = [[]]
+
+        const filterFlat = (b) =>
+            b.filter((value) => value !== '').flatMap((value) => value);
+
+        const winner = (arr) => {
+            console.log(arr);
+            if (arr.length === 0) {
+                return false;
+            }
+            return arr.every((value) => value !== '');
+        };
+
+        return {
+            calcX: {
+                axisX: filterFlat(axisX),
+                winner: winner(filterFlat(axisX)),
+                typeOfLine: 'x-line',
+            },
+            calcY: {
+                axisY: filterFlat(axisY),
+                winner: winner(filterFlat(axisY)),
+                typeOfLine: 'y-line',
+            },
+            calcCL: {
+                crossL: cross(conditionReverse),
+                winner: winner(cross(conditionReverse)),
+                typeOfLine: 'cl-line',
+            },
+            calcCR: {
+                crossR: cross(condition),
+                winner: winner(cross(condition)),
+                typeOfLine: 'cr-line',
+            },
+        };
+    };
 
     return {
         playRound,
         getActivePlayer,
+        getBoard: board.getBoard,
     };
 }
 
-const game = GameController();
+const handleDOM = (() => {
+    const information = document.getElementById('information');
+    const boardHTML = document.getElementById('boardHTML');
+    const modal = document.getElementById('dialog');
+    const form = document.getElementById('form');
+
+    const btnStart = document.getElementById('start');
+
+    btnStart.addEventListener('click', () => {
+        modal.showModal();
+    });
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const players = [
+            document.getElementById('playerOne').value,
+            document.getElementById('playerTwo').value,
+        ];
+
+        modal.close();
+        btnStart.textContent = '';
+
+        return ScreenController(players);
+    });
+
+    const ScreenController = (players) => {
+        const game = GameController(players[0], players[1]);
+
+        const updateScreen = () => {
+            boardHTML.textContent = '';
+
+            const board = game.getBoard();
+            const activePlayer = game.getActivePlayer();
+            console.log(activePlayer);
+            information.textContent = `${activePlayer.name} turn!`;
+
+            // Render Board
+
+            let counter = 0;
+            board.forEach((row, x) => {
+                row.forEach((cell, y) => {
+                    counter += 1;
+                    const value = document.createElement('button');
+                    value.classList.add('btnPick');
+                    value.innerHTML = `<img src="img/${cell.getValue()}.svg" alt="" srcset="">`;
+                    value.setAttribute('data-x', `${x}`);
+                    value.setAttribute('data-y', `${y}`);
+                    value.setAttribute('data-move', `${counter}`);
+
+                    boardHTML.appendChild(value);
+                });
+            });
+        };
+
+        function clickHandlerBoard(e) {
+            const row = e.target.dataset.x;
+            const column = e.target.dataset.y;
+
+            if (!row || !column) return;
+
+            const isWinner = Object.values(game.playRound(row, column));
+            console.log(isWinner);
+            // Check the second property of the object
+            if (isWinner[1]) return winner([isWinner[0], isWinner[2]]);
+
+            updateScreen();
+        }
+
+        function drawLines(arr) {
+            const [position, type] = arr;
+            console.log(position);
+            console.log(type);
+            const listItems = boardHTML.children;
+            const listArray = [...listItems];
+            console.log(listArray);
+            listArray.forEach((element) => {
+                position.forEach((value) => {
+                    const [row, column] = value;
+
+                    console.log(value);
+                    console.log(row);
+                    console.log(column);
+
+                    if (
+                        parseInt(element.dataset.x) === row &&
+                        parseInt(element.dataset.y) === column
+                    ) {
+                        const line = document.createElement('img');
+                        line.classList.add('child');
+                        line.src = `img/${type}.svg`;
+                        element.appendChild(line);
+                    }
+                });
+            });
+        }
+
+        function winner(arr) {
+            updateScreen();
+            drawLines(arr);
+            information.textContent = `${
+                game.getActivePlayer().name
+            } WINS THE ROUND!`;
+        }
+
+        boardHTML.addEventListener('click', clickHandlerBoard);
+
+        updateScreen();
+    };
+})();
