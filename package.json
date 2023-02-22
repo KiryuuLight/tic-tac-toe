@@ -26,7 +26,7 @@
   "name": "tic-tac-toe",
   "version": "1.0.0",
   "description": "A complete tic-tac-toe game using module patterns and factory functions.",
-  "main": "js/index.js",
+  "main": "js/app.js",
   "scripts": {
     "test": "eslint .",
     "lint:fix": "eslint . --fix"
