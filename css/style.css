@@ -51,7 +51,20 @@ img {
     height: 90px;
     background-color: var(--text);
     position: relative;
+}
 
+.anim {
+    animation: fadeIn 4s forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @media (min-width : 576px) {
@@ -83,6 +96,7 @@ img {
     padding: 20px;
     font-size: 2.4rem;
     color: var(--text);
+    margin-top: 40px;
 }
 
 .btnOption:hover {
@@ -105,10 +119,29 @@ img {
     font-size: 1.6rem;
 }
 
-
-
 .child {
     position: absolute;
     top: 0;
     left: 0;
+}
+
+/* Modal */
+
+#dialog {
+    color: var(--text);
+    background-color: var(--bg);
+    font-weight: bolder;
+    padding: 20px;
+    border: none;
+}
+
+#dialog input[type=text] {
+    all: unset;
+}
+
+#dialog .btnOption {
+    font-size: 1.4rem;
+    padding: 10px;
+    margin-top: 10px;
+
 }
