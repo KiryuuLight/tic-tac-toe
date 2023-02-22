@@ -12,35 +12,46 @@ function GameBoard() {
         }
     }
 
+    const resetBoard = () => {
+        for (let i = 0; i < rows; i += 1) {
+            board[i] = [];
+            for (let j = 0; j < columns; j += 1) {
+                board[i][j] = createCell();
+            }
+        }
+    };
+
     const getBoard = () => board;
 
     const putPiece = (row, column, player) => {
-        const availableCells = board.some(
-            (cell, index) => cell[index].getValue() === ''
-        );
+        const availableCells = board
+            .map((r) => {
+                const ver = r.some((cell) => cell.getValue() === '');
+                return ver;
+            })
+            .every((value) => value === false);
 
-        if (!availableCells) return;
+        if (availableCells) return 'full';
 
         if (board[row][column] !== '') {
             board[row][column].addValue(player);
         }
-
-        return board[1][1].getValue();
     };
 
-    function printBoard() {
+    const printBoard = () => {
         const print = board.map((row) => row.map((value) => value.getValue()));
         console.log(print);
-    }
+    };
 
     return {
         getBoard,
         putPiece,
         printBoard,
+        resetBoard,
     };
 }
 
-// Token : 0 for [] , 1 for 'X' , 2 for 'O'
+// Token : '' for [] , 'close' for 'X' , 'circle' for 'O'
 function createCell() {
     let value = '';
     const addValue = (token) => {
@@ -85,13 +96,13 @@ function GameController(playerOne = 'Mario', playerTwo = 'Luigi') {
         console.log(
             `Election made , inserting value in row [${row}] , column : [${column}]`
         );
-        board.putPiece(row, column, getActivePlayer().token);
-
         const player = getActivePlayer().token;
+
+        const insertPiece = board.putPiece(row, column, player);
 
         const isWinner = handleWin(player);
 
-        console.log(isWinner);
+        if (isWinner === 'TIE') return 'TIE';
 
         if (
             isWinner.calcX.winner ||
@@ -102,19 +113,24 @@ function GameController(playerOne = 'Mario', playerTwo = 'Luigi') {
             const objValue = Object.values(isWinner).find(
                 (obj) => obj.winner === true
             );
-            console.log(objValue);
             return objValue;
         }
 
         switchPlayerTurn();
         printNewRound();
-
-        return [];
     };
 
     // GAME LOGIC
 
     const handleWin = (token) => {
+        // TIE
+
+        const tie = board
+            .getBoard()
+            .every((r) => r.every((value) => value.getValue() !== ''));
+
+        if (tie) return 'TIE';
+
         // In our array we have elements positioned by [x][y] dimensions
         // So we are looking for these specific patterns
         // For row : All [x] values have to be the same , [y] values doesn't matter
@@ -180,7 +196,6 @@ function GameController(playerOne = 'Mario', playerTwo = 'Luigi') {
             b.filter((value) => value !== '').flatMap((value) => value);
 
         const winner = (arr) => {
-            console.log(arr);
             if (arr.length === 0) {
                 return false;
             }
@@ -215,6 +230,7 @@ function GameController(playerOne = 'Mario', playerTwo = 'Luigi') {
         playRound,
         getActivePlayer,
         getBoard: board.getBoard,
+        getReset: board.resetBoard,
     };
 }
 
@@ -240,7 +256,7 @@ const handleDOM = (() => {
         modal.close();
         btnStart.textContent = '';
 
-        return ScreenController(players);
+        ScreenController(players);
     });
 
     const ScreenController = (players) => {
@@ -250,9 +266,9 @@ const handleDOM = (() => {
             boardHTML.textContent = '';
 
             const board = game.getBoard();
+
             const activePlayer = game.getActivePlayer();
-            console.log(activePlayer);
-            information.textContent = `${activePlayer.name} turn!`;
+            information.textContent = `Turn : ${activePlayer.name} `;
 
             // Render Board
 
@@ -278,28 +294,27 @@ const handleDOM = (() => {
 
             if (!row || !column) return;
 
-            const isWinner = Object.values(game.playRound(row, column));
-            console.log(isWinner);
+            const round = game.playRound(row, column);
+
+            if (round === 'TIE') return tieEvent();
+
+            if (round !== undefined) {
+                const isWinner = Object.values(round);
+                if (isWinner[1]) return winnerEvent([isWinner[0], isWinner[2]]);
+            }
+
             // Check the second property of the object
-            if (isWinner[1]) return winner([isWinner[0], isWinner[2]]);
 
             updateScreen();
         }
 
         function drawLines(arr) {
             const [position, type] = arr;
-            console.log(position);
-            console.log(type);
             const listItems = boardHTML.children;
             const listArray = [...listItems];
-            console.log(listArray);
             listArray.forEach((element) => {
                 position.forEach((value) => {
                     const [row, column] = value;
-
-                    console.log(value);
-                    console.log(row);
-                    console.log(column);
 
                     if (
                         parseInt(element.dataset.x) === row &&
@@ -314,12 +329,21 @@ const handleDOM = (() => {
             });
         }
 
-        function winner(arr) {
+        function winnerEvent(arr) {
             updateScreen();
             drawLines(arr);
             information.textContent = `${
                 game.getActivePlayer().name
             } WINS THE ROUND!`;
+            btnStart.textContent = 'RESTART';
+            game.getReset();
+        }
+
+        function tieEvent() {
+            updateScreen();
+            information.textContent = `IT'S A TIE`;
+            btnStart.textContent = 'RESTART';
+            game.getReset();
         }
 
         boardHTML.addEventListener('click', clickHandlerBoard);
