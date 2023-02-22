@@ -14,30 +14,40 @@
 </head>
 
 <body>
+    <dialog id="dialog" type="form">
+        <form id="form" class="wrapper direction-column">
+            <label for="">PLAYER 1</label>
+            <input type="text" name="" id="playerOne">
+
+            <label for="">PLAYER 2</label>
+            <input type="text" name="" id="playerTwo">
+
+            <button class="btnOption">OK</button>
+        </form>
+    </dialog>
+
     <div class="main">
         <h1 class="text">TIC TAC TOE</h1>
 
         <p class="text" id="information"></p>
-
         <div class="wrapper">
             <div class="grid" id="boardHTML">
+                <button class="btnPick anim" data-x="0" data-y="0" data-move="1"></button>
+                <button class="btnPick anim" data-x="0" data-y="0" data-move="1"></button>
+                <button class="btnPick anim" data-x="0" data-y="0" data-move="1"></button>
+                <button class="btnPick anim" data-x="0" data-y="0" data-move="1"></button>
+                <button class="btnPick anim" data-x="0" data-y="0" data-move="1"></button>
+                <button class="btnPick anim" data-x="0" data-y="0" data-move="1"></button>
+                <button class="btnPick anim" data-x="0" data-y="0" data-move="1"></button>
+                <button class="btnPick anim" data-x="0" data-y="0" data-move="1"></button>
+                <button class="btnPick anim" data-x="0" data-y="0" data-move="1"></button>
             </div>
         </div>
 
         <div class="wrapper mb-y option-section">
             <button class="btnOption" id="start">START</button>
         </div>
-        <dialog id="dialog" type="form">
-            <form id="form" class="wrapper direction-column">
-                <label for="">Player 1 Name :</label>
-                <input type="text" name="" id="playerOne">
 
-                <label for="">Player 2 Name :</label>
-                <input type="text" name="" id="playerTwo">
-
-                <button>OK</button>
-            </form>
-        </dialog>
     </div>
 
 
